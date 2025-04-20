@@ -838,7 +838,15 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
                 ],
               ),
               // Tambahkan sedikit spasi di bagian bawah jika diperlukan
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
+              _buildInfoRow(
+                theme: theme,
+                colorScheme: colorScheme,
+                icon: Icons.access_time_outlined,
+
+                label: "Tiba",
+                value: "10.00.00",
+              ),
             ],
           ),
         ),
@@ -862,34 +870,37 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
     return Row(
       crossAxisAlignment:
           CrossAxisAlignment.start, // Align start untuk teks panjang
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        Padding(
-          // Beri padding agar ikon sejajar dengan baris pertama teks jika value wrap
-          padding: const EdgeInsets.only(top: 3.0), // Sedikit disesuaikan
-          child: Icon(
-            icon,
-            size: 16, // Ukuran ikon detail
-            color:
-                iconColor ??
-                colorScheme.onSurfaceVariant.withOpacity(
-                  0.8,
-                ), // Gunakan warna dari parameter atau default
-          ),
-        ),
-        const SizedBox(width: 8),
-        SizedBox(
-          width: 70, // Lebar tetap untuk label agar rata kiri
-          child: Text(
-            "$label:",
-            style: theme.textTheme.bodySmall?.copyWith(
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18, // Ukuran ikon detail
               color:
-                  labelColor ??
+                  iconColor ??
                   colorScheme.onSurfaceVariant.withOpacity(
                     0.8,
                   ), // Gunakan warna dari parameter atau default
             ),
-          ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 70, // Lebar tetap untuk label agar rata kiri
+              child: Text(
+                "$label:",
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color:
+                      labelColor ??
+                      colorScheme.onSurfaceVariant.withOpacity(
+                        0.8,
+                      ), // Gunakan warna dari parameter atau default
+                ),
+              ),
+            ),
+          ],
         ),
+
         const SizedBox(width: 4),
         Expanded(
           child: Text(
