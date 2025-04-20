@@ -2,7 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:krl_schedule_with_gemini_ai/service/station_name_service.dart';
+import 'package:krl_schedule_with_gemini_ai/services/krl_service.dart';
+import 'package:krl_schedule_with_gemini_ai/services/station_name_service.dart';
 import 'dart:convert';
 import 'models/api_station_name.dart';
 
@@ -24,10 +25,6 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
   List<Data> _stationList = [];
   List<Data> _filteredStations = [];
   final TextEditingController _searchController = TextEditingController();
-
-  // --- Token API (Sebaiknya disimpan lebih aman, misal via environment variables) ---
-  final String _token =
-      'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiMDYzNWIyOGMzYzg3YTY3ZTRjYWE4YTI0MjYxZGYwYzIxNjYzODA4NWM2NWU4ZjhiYzQ4OGNlM2JiZThmYWNmODU4YzY0YmI0MjgyM2EwOTUiLCJpYXQiOjE3MjI2MTc1MTQsIm5iZiI6MTcyMjYxNzUxNCwiZXhwIjoxNzU0MTUzNTE0LCJzdWIiOiI1Iiwic2NvcGVzIjpbXX0.Jz_sedcMtaZJ4dj0eWVc4_pr_wUQ3s1-UgpopFGhEmJt_iGzj6BdnOEEhcDDdIz-gydQL5ek0S_36v5h6P_X3OQyII3JmHp1SEDJMwrcy4FCY63-jGnhPBb4sprqUFruDRFSEIs1cNQ-3rv3qRDzJtGYc_bAkl2MfgZj85bvt2DDwBWPraZuCCkwz2fJvox-6qz6P7iK9YdQq8AjJfuNdl7t_1hMHixmtDG0KooVnfBV7PoChxvcWvs8FOmtYRdqD7RSEIoOXym2kcwqK-rmbWf9VuPQCN5gjLPimL4t2TbifBg5RWNIAAuHLcYzea48i3okbhkqGGlYTk3iVMU6Hf_Jruns1WJr3A961bd4rny62lNXyGPgNLRJJKedCs5lmtUTr4gZRec4Pz_MqDzlEYC3QzRAOZv0Ergp8-W1Vrv5gYyYNr-YQNdZ01mc7JH72N2dpU9G00K5kYxlcXDNVh8520-R-MrxYbmiFGVlNF2BzEH8qq6Ko9m0jT0NiKEOjetwegrbNdNq_oN4KmHvw2sHkGWY06rUeciYJMhBF1JZuRjj3JTwBUBVXcYZMFtwUAoikVByzKuaZZeTo1AtCiSjejSHNdpLxyKk_SFUzog5MOkUN1ktAhFnBFoz6SlWAJBJIS-lHYsdFLSug2YNiaNllkOUsDbYkiDtmPc9XWc';
 
   @override
   void initState() {
@@ -82,64 +79,24 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
     }
   }
 
-  // --- Fungsi Ambil Jadwal KRL dari API ---
   Future<void> _fetchKRLJadwal(String stationCode) async {
     if (stationCode.isEmpty) return;
     setState(() => _isLoading = true);
-    final url = Uri.parse(
-      'https://api-partner.krl.co.id/krl-webs/v1/schedule?stationid=$stationCode&timefrom=00:00&timeto=23:59', // Ambil semua jadwal
-    );
 
     try {
-      final response = await http.get(
-        url,
-        headers: {'Authorization': _token, 'Accept': 'application/json'},
-      );
-
+      final schedules = await KRLService().fetchJadwal(stationCode);
       if (mounted) {
-        // Cek jika widget masih ada di tree
-        if (response.statusCode == 200) {
-          final jsonData = json.decode(response.body);
-          // Filter jadwal yang waktunya sudah lewat di sini
-          final now = TimeOfDay.now();
-          final nowMinutes = now.hour * 60 + now.minute;
-
-          List<dynamic> upcomingSchedules =
-              (jsonData['data'] as List<dynamic>?)?.where((item) {
-                final time = item['time_est'] as String?;
-                if (time == null) return false;
-                final parts = time.split(':');
-                if (parts.length < 2) return false;
-                final itemHour = int.tryParse(parts[0]) ?? 0;
-                final itemMinute = int.tryParse(parts[1]) ?? 0;
-                final itemMinutes = itemHour * 60 + itemMinute;
-                return itemMinutes >= nowMinutes;
-              }).toList() ??
-              []; // Pastikan tidak null
-
-          setState(() {
-            _schedules = upcomingSchedules;
-            _isLoading = false;
-          });
-        } else {
-          print('Gagal ambil jadwal: ${response.statusCode} ${response.body}');
-          setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Gagal mengambil jadwal KRL (${response.statusCode})',
-              ),
-            ),
-          );
-        }
+        setState(() {
+          _schedules = schedules;
+          _isLoading = false;
+        });
       }
     } catch (e) {
-      print('Error fetch jadwal: $e');
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Terjadi kesalahan jaringan: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -175,11 +132,6 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
         targetHour,
         targetMinute,
       );
-
-      // Jika waktu target sudah lewat hari ini, anggap besok (opsional, tergantung kebutuhan)
-      // if (targetTime.isBefore(now)) {
-      //   targetTime = targetTime.add(Duration(days: 1));
-      // }
 
       final diff = targetTime.difference(now);
 
@@ -345,17 +297,6 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
                   : null,
         ),
         style: theme.textTheme.bodyLarge,
-        // onTap: () {
-        //   // Saat search bar di tap lagi setelah memilih, reset pilihan
-        //   // agar daftar stasiun muncul kembali untuk pencarian baru.
-        //   if (_selectedStartStation != null) {
-        //     setState(() {
-        //       _selectedStartStation = null;
-        //       _schedules.clear();
-        //       _searchController.clear(); // Opsional: kosongkan teks juga
-        //     });
-        //   }
-        // },
       ),
     );
   }
