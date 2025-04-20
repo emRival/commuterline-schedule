@@ -6,8 +6,8 @@ import 'package:krl_schedule_with_gemini_ai/krl_schedule_page.dart';
 void main() {
   runApp(
     DevicePreview(
-      enabled: !kIsWeb && !(defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android),
-      isToolbarVisible: !kIsWeb && !(defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android),
+      enabled: kIsWeb && !(defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android),
+      isToolbarVisible: kIsWeb && !(defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android),
       defaultDevice: Devices.ios.iPhone13ProMax,
       builder: (context) => MaterialApp(
         useInheritedMediaQuery: true,

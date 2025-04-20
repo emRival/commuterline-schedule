@@ -464,6 +464,7 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
           final colorHex = item['color'] as String? ?? '#808080';
           final kaName = item['ka_name'] as String? ?? '-';
           final kaId = item['train_id'] as String? ?? '-';
+          final destTime = item['dest_time'] as String? ?? '-';
 
           return _buildScheduleCard(
             context: context,
@@ -475,6 +476,7 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
             kaName: kaName,
             kaId: kaId,
             time: itemTime,
+            destTime: destTime,
           );
         },
       );
@@ -496,6 +498,7 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
     required String kaName,
     required String kaId,
     required String time,
+    required String destTime,
   }) {
     final timeLabel = _getTimeDifferenceLabel(time);
     final bool isUrgent = timeLabel == "Segera";
@@ -786,7 +789,7 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
                 icon: Icons.access_time_outlined,
 
                 label: "Tiba",
-                value: "10.00.00",
+                value: destTime,
               ),
             ],
           ),
