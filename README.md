@@ -101,7 +101,7 @@ This project is licensed under the [MIT License](LICENSE). 📄
 ## 📧 Contact
 
 Have questions or need support? Reach out to us! 💌
-- **Email**: support@krlschedule.com
+- **Instagram**: [@em_rival](https://instagram.com/em_rival/)
 - **GitHub**: [emRival](https://github.com/emRival)
 
 ---
