@@ -49,7 +49,7 @@
 ## 🛠️ Technologies Used
 
 - 🖥️ **Framework**: Flutter
-- 🔥 **Backend**: Firebase
+- 🔥 **Backend**: API Kai Commuter Line
 - 🎨 **Styling**: Material Design
 
 ---
