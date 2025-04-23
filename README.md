@@ -1,17 +1,21 @@
-# KRL Schedule
+# 🚆 KRL Schedule
 
-KRL Schedule is an unofficial yet powerful application designed to provide users with real-time commuter line schedules in Indonesia. This app is tailored to enhance your commuting experience by offering accurate, up-to-date information and a user-friendly interface. Whether you're planning your journey or checking the next train from your station, KRL Schedule has you covered.
+**KRL Schedule** is your ultimate companion for navigating Indonesia's commuter lines! This unofficial yet powerful app provides real-time schedules, making your daily commute smarter, faster, and hassle-free. 🌟 Whether you're planning your journey or checking the next train, **KRL Schedule** has everything you need! 🚉✨
 
-## Features
+---
 
-- **Real-Time Schedule Updates**: Access the latest commuter line schedules with precise timing.
-- **Station Search**: Quickly find departure and arrival stations with an intuitive search feature.
-- **Nearest Train Information**: View a list of the nearest trains departing from your selected station.
-- **Detailed Route Information**: Get a comprehensive list of stations along your route, including estimated arrival times and transit stations marked with line colors for easy identification.
-- **Flash Refresh**: Instantly refresh data to ensure you always have the most current schedule.
-- **Cross-Platform Access**: Available on both Android and web platforms for seamless usage.
+## 🌟 Features
 
-## Installation
+- 🕒 **Real-Time Schedule Updates**: Stay on track with the latest commuter line schedules.
+- 🔍 **Station Search**: Find departure and arrival stations in seconds with an intuitive search feature.
+- 🚄 **Nearest Train Info**: See the next trains departing from your station at a glance.
+- 🗺️ **Detailed Route Info**: View all stations along your route, with estimated times and transit stations highlighted by line colors. 🎨
+- 🔄 **Flash Refresh**: Instantly refresh data for the most accurate schedule updates.
+- 📱💻 **Cross-Platform Access**: Use it seamlessly on Android and the web.
+
+---
+
+## 🚀 Installation
 
 1. Clone the repository:
     ```bash
@@ -30,40 +34,48 @@ KRL Schedule is an unofficial yet powerful application designed to provide users
     flutter run
     ```
 
-## Usage
+---
 
-1. Open the app on your Android device or web browser.
-2. Use the **Search Station** feature to select your departure and arrival stations.
-3. View the list of trains departing soonest from your selected station.
-4. Tap on a train to see detailed route information, including all stations and estimated times. Transit stations will be highlighted with their respective line colors for easy identification.
-5. Use the **Flash Refresh** button to update the schedule instantly.
+## 🛠️ Usage
 
-## Technologies Used
+1. Open the app on your Android device or web browser. 🌐📱
+2. Use the **Search Station** feature to select your departure and arrival stations. 🔍
+3. View the list of trains departing soonest from your station. 🚄
+4. Tap on a train to see detailed route information, including all stations and estimated times. Transit stations are highlighted for easy navigation. 🗺️
+5. Use the **Flash Refresh** button to update the schedule instantly. 🔄
 
-- **Framework**: Flutter
-- **Backend**: Firebase
-- **Styling**: Material Design
+---
 
-## Web Version
+## 🛠️ Technologies Used
 
-Access the web version of the application here: [KRL Schedule Web](https://emrival.github.io/commuterline-schedule/)
+- 🖥️ **Framework**: Flutter
+- 🔥 **Backend**: Firebase
+- 🎨 **Styling**: Material Design
 
-## Screenshots
+---
 
-### 1. Search Station
-![Search Station](screenshots/search_station.png)
+## 🌐 Web Version
 
-### 2. Train List
-![Train List](screenshots/train_list.png)
+Access the web version here: [KRL Schedule Web](https://emrival.github.io/commuterline-schedule/) 🌍
 
-### 3. Route Details
-![Route Details](screenshots/route_details.png)
+---
 
-## Contributing
+## 📸 Screenshots
 
-Contributions are welcome! Follow these steps to contribute:
+### 🚉 Search Station | 🚄 Train List | 🗺️ Route Details
+<p align="center">
+  <img src="screenshots/search_station.png" alt="Search Station" width="30%" />
+  <img src="screenshots/train_list.png" alt="Train List" width="30%" />
+  <img src="screenshots/route_details.png" alt="Route Details" width="30%" />
+</p>
 
-1. Fork the repository.
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Follow these steps to get started:
+
+1. Fork the repository. 🍴
 2. Create a new branch:
     ```bash
     git checkout -b feature/your-feature-name
@@ -76,16 +88,22 @@ Contributions are welcome! Follow these steps to contribute:
     ```bash
     git push origin feature/your-feature-name
     ```
-5. Open a pull request.
+5. Open a pull request. 🚀
 
-## License
+---
 
-This project is licensed under the [MIT License](LICENSE).
+## 📜 License
 
-## Contact
+This project is licensed under the [MIT License](LICENSE). 📄
 
-For questions or support, please contact:
+---
+
+## 📧 Contact
+
+Have questions or need support? Reach out to us! 💌
 - **Email**: support@krlschedule.com
 - **GitHub**: [emRival](https://github.com/emRival)
 
-Experience a smarter and more efficient way to commute with KRL Schedule, your ultimate companion for navigating Indonesia's commuter lines!
+---
+
+🌟 Experience a smarter, more efficient way to commute with **KRL Schedule**! Your journey, redefined. 🚉✨
