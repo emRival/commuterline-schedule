@@ -1,51 +1,51 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:krl_schedule_with_gemini_ai/models/api_detail_jadwal_krl.dart';
+import 'package:krl_schedule_with_gemini_ai/models/api_jadwal_krl.dart';
 import 'package:krl_schedule_with_gemini_ai/services/krl_service.dart';
 import 'package:krl_schedule_with_gemini_ai/services/station_name_service.dart';
-import 'dart:convert';
 import 'models/api_station_name.dart';
 
-// --- Konstanta untuk Styling ---
 const double _kPadding = 16.0;
 const double _kSpacing = 12.0;
 final BorderRadius _kBorderRadius = BorderRadius.circular(12.0);
 final BorderRadius _kCardBorderRadius = BorderRadius.circular(16.0);
 
 class KRLSchedulePage extends StatefulWidget {
+  const KRLSchedulePage({super.key});
+
   @override
-  _KRLSchedulePageState createState() => _KRLSchedulePageState();
+  KRLSchedulePageState createState() => KRLSchedulePageState();
 }
 
-class _KRLSchedulePageState extends State<KRLSchedulePage> {
-  List<dynamic> _schedules = [];
+class KRLSchedulePageState extends State<KRLSchedulePage> {
+  List<DataJadwalKrl> _schedules = [];
   bool _isLoading = false;
   Data? _selectedStartStation;
   List<Data> _stationList = [];
   List<Data> _filteredStations = [];
   final TextEditingController _searchController = TextEditingController();
-
+  late FocusNode _searchFocusNode;
   @override
   void initState() {
     super.initState();
     _loadStations();
     _searchController.addListener(_onSearchChanged);
+    _searchFocusNode = FocusNode();
   }
 
   @override
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
+    _searchFocusNode.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
-  // --- Fungsi Pencarian Stasiun ---
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase().trim();
     setState(() {
       if (query.isEmpty) {
-        _filteredStations = []; // Kosongkan jika query kosong
+        _filteredStations = [];
       } else {
         _filteredStations =
             _stationList.where((station) {
@@ -57,20 +57,18 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
     });
   }
 
-  // --- Fungsi Load Stasiun dari Assets ---
   Future<void> _loadStations() async {
     try {
-      // Ganti dengan implementasi loadStationsFromAssets Anda
       final stationData = await loadStationsFromAssets();
       if (mounted) {
         setState(() {
           _stationList = stationData.data ?? [];
-          // Awalnya tidak menampilkan hasil filter sampai user mengetik
+
           _filteredStations = [];
         });
       }
     } catch (e) {
-      print('Gagal load stasiun: $e');
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal memuat data stasiun: $e')),
@@ -82,7 +80,6 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
   Future<void> _fetchKRLJadwal(String stationCode) async {
     if (stationCode.isEmpty) return;
     setState(() => _isLoading = true);
-
     try {
       final schedules = await KRLService().fetchJadwal(stationCode);
       if (mounted) {
@@ -101,30 +98,26 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
     }
   }
 
-  // --- Helper Konversi Hex ke Color ---
   Color _hexToColor(String hex) {
     hex = hex.replaceAll('#', '');
     if (hex.length == 6) {
-      hex = 'FF$hex'; // Add alpha if missing
+      hex = 'FF$hex';
     }
     try {
       return Color(int.parse(hex, radix: 16));
     } catch (e) {
-      return Colors.grey; // Fallback color
+      return Colors.grey;
     }
   }
 
-  // --- Helper Mendapatkan Label Perbedaan Waktu ---
   String _getTimeDifferenceLabel(String time) {
     try {
       final now = DateTime.now();
       final parts = time.split(':');
       if (parts.length < 2) return "-";
-
       final targetHour = int.tryParse(parts[0]);
       final targetMinute = int.tryParse(parts[1]);
       if (targetHour == null || targetMinute == null) return "-";
-
       var targetTime = DateTime(
         now.year,
         now.month,
@@ -132,13 +125,10 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
         targetHour,
         targetMinute,
       );
-
       final diff = targetTime.difference(now);
-
-      if (diff.isNegative) return "Berangkat"; // Atau "Sudah Lewat"
+      if (diff.isNegative) return "Berangkat";
       if (diff.inMinutes < 1) return "Segera";
       if (diff.inMinutes < 60) return "${diff.inMinutes} menit lagi";
-
       final hours = diff.inHours;
       final minutes = diff.inMinutes % 60;
       if (minutes == 0) {
@@ -147,7 +137,7 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
         return "$hours jam $minutes menit lagi";
       }
     } catch (e) {
-      print("Error parsing time diff: $e");
+   
       return "-";
     }
   }
@@ -156,39 +146,25 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDarkMode = theme.brightness == Brightness.dark;
-
     return Scaffold(
-      // --- AppBar dengan Gradient dan Style ---
       appBar: AppBar(
-        // centerTitle: true, // Hapus atau komen ini agar judul rata kiri (lebih umum di UI modern)
-        titleSpacing:
-            0, // Set titleSpacing ke 0 agar judul lebih dekat ke leading icon
+        titleSpacing: 0,
         title: Padding(
-          padding: const EdgeInsets.only(
-            left: 0.0,
-          ), // Padding kiri di sini bisa disesuaikan jika leading dihilangkan atau diubah
+          padding: const EdgeInsets.only(left: 0.0),
           child: Text(
-            "Jadwal KRL Commuter Line", // Atau bisa disingkat "Jadwal KRL" jika terlalu panjang
+            "Jadwal KRL Commuter Line",
             style: theme.textTheme.titleLarge?.copyWith(
-              // Menggunakan ukuran font yang lebih besar dan konsisten
               fontWeight: FontWeight.bold,
-              color:
-                  colorScheme
-                      .onPrimary, // Warna teks kontras dg background AppBar
+              color: colorScheme.onPrimary,
             ),
           ),
         ),
         leading: Padding(
-          // Tambahkan ikon KRL di sebelah kiri (leading)
-          padding: const EdgeInsets.only(
-            left: 16.0,
-          ), // Beri padding kiri agar tidak terlalu mepet
+          padding: const EdgeInsets.only(left: 16.0),
           child: Icon(
-            Icons
-                .train_rounded, // Ikon kereta yang mungkin lebih estetik (pilih yang Anda suka)
-            color: colorScheme.onPrimary, // Warna ikon kontras
-            size: 28, // Ukuran ikon yang pas
+            Icons.train_rounded,
+            color: colorScheme.onPrimary,
+            size: 28,
           ),
         ),
         flexibleSpace: Container(
@@ -196,56 +172,42 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
             gradient: LinearGradient(
               colors: [
                 colorScheme.primary,
-                colorScheme.primary.withOpacity(
-                  0.8,
-                ), // Warna kedua sedikit transparan
-              ], // Gunakan warna tema
-              // Arah gradient bisa diubah untuk variasi visual
+                colorScheme.primary.withOpacity(0.8),
+              ],
+
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
-              // begin: Alignment.topCenter,
-              // end: Alignment.bottomCenter,
             ),
-            // Anda bisa tambahkan gambar latar belakang KRL di sini jika mau, tapi akan jadi kompleks
-            // image: DecorationImage(...)
           ),
         ),
-        elevation: 4.0, // Tingkatkan shadow sedikit agar AppBar lebih menonjol
+        elevation: 4.0,
         actions: [
-          // Tombol refresh (opsional)
           if (_selectedStartStation != null)
             IconButton(
               icon: Icon(Icons.refresh, color: colorScheme.onPrimary),
               tooltip: 'Muat Ulang Jadwal',
               onPressed:
                   _isLoading
-                      ? null // Nonaktifkan tombol saat loading
+                      ? null
                       : () => _fetchKRLJadwal(_selectedStartStation!.id ?? ''),
             ),
-          const SizedBox(width: 8), // Tambahkan sedikit spasi di ujung kanan
+          const SizedBox(width: 8),
         ],
-        // backgroundColor: Colors.transparent, // Set transparent agar gradient terlihat
       ),
       body: Padding(
         padding: const EdgeInsets.all(_kPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // --- Search Bar dengan Style ---
             _buildSearchBar(theme, colorScheme),
-
             const SizedBox(height: _kSpacing),
 
-            // --- Daftar Hasil Pencarian (Animated) ---
             AnimatedSize(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
               child: _buildSearchResultsList(theme, colorScheme),
             ),
 
-            // Tampilkan nama stasiun terpilih jika ada
-
-            // --- Konten Utama (Loading, Empty, atau List Jadwal) ---
             Expanded(
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
@@ -258,21 +220,21 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
     );
   }
 
-  // --- Widget: Search Bar ---
   Widget _buildSearchBar(ThemeData theme, ColorScheme colorScheme) {
     return Material(
-      elevation: 3.0, // Shadow halus
+      elevation: 3.0,
       borderRadius: _kBorderRadius,
       shadowColor: Colors.grey.withOpacity(0.3),
       child: TextField(
         controller: _searchController,
+        focusNode: _searchFocusNode,
         decoration: InputDecoration(
           hintText: 'Cari stasiun keberangkatan...',
           filled: true,
-          fillColor: colorScheme.surface, // Warna background sesuai tema
+          fillColor: colorScheme.surface,
           border: OutlineInputBorder(
             borderRadius: _kBorderRadius,
-            borderSide: BorderSide.none, // Hapus border
+            borderSide: BorderSide.none,
           ),
           prefixIcon: Icon(Icons.search, color: colorScheme.primary),
           contentPadding: const EdgeInsets.symmetric(
@@ -285,13 +247,13 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
                     icon: Icon(Icons.clear, size: 20, color: Colors.grey[600]),
                     onPressed: () {
                       _searchController.clear();
-                      // Reset state jika diperlukan saat clear
+
                       setState(() {
                         _selectedStartStation = null;
                         _schedules.clear();
                         _filteredStations.clear();
                       });
-                      FocusScope.of(context).unfocus(); // Tutup keyboard
+                      FocusScope.of(context).unfocus();
                     },
                   )
                   : null,
@@ -301,13 +263,11 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
     );
   }
 
-  // --- Widget: Daftar Hasil Pencarian Stasiun ---
   Widget _buildSearchResultsList(ThemeData theme, ColorScheme colorScheme) {
     if (_filteredStations.isEmpty) {
-      return const SizedBox.shrink(); // Jangan tampilkan apapun jika tidak ada filter
+      return const SizedBox.shrink();
     }
 
-    // Gunakan Material + ClipRRect untuk efek visual yang lebih baik
     return Material(
       elevation: 3.0,
       borderRadius: _kBorderRadius,
@@ -315,26 +275,23 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
       child: ClipRRect(
         borderRadius: _kBorderRadius,
         child: Container(
-          // Batasi tinggi list hasil pencarian
           constraints: BoxConstraints(
-            maxHeight:
-                MediaQuery.of(context).size.height *
-                0.3, // Max 30% tinggi layar
+            maxHeight: MediaQuery.of(context).size.height * 0.3,
           ),
           decoration: BoxDecoration(
             color: colorScheme.surface,
             borderRadius: _kBorderRadius,
           ),
           child: ListView.separated(
-            padding: EdgeInsets.zero, // Hapus padding default ListView
-            shrinkWrap: true, // Agar tinggi list sesuai konten
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
             itemCount: _filteredStations.length,
             separatorBuilder:
                 (_, __) => Divider(
                   height: 1,
                   thickness: 1,
                   color: colorScheme.outline.withOpacity(0.1),
-                  indent: 50, // Beri indentasi pada divider
+                  indent: 50,
                 ),
             itemBuilder: (context, index) {
               final station = _filteredStations[index];
@@ -356,17 +313,16 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
                   ),
                 ),
                 onTap: () {
-                  FocusScope.of(context).unfocus(); // Tutup keyboard
+                  FocusScope.of(context).unfocus();
                   setState(() {
                     _selectedStartStation = station;
-                    _schedules.clear(); // Kosongkan jadwal lama
-                    _searchController.text =
-                        station.name ?? ''; // Update teks search bar
-                    _filteredStations.clear(); // Sembunyikan daftar hasil
+                    _schedules.clear();
+                    _searchController.text = station.name ?? '';
+                    _filteredStations.clear();
                   });
-                  _fetchKRLJadwal(station.id ?? ''); // Ambil jadwal baru
+                  _fetchKRLJadwal(station.id ?? '');
                 },
-                // Tambahkan efek visual saat ditekan
+
                 splashColor: colorScheme.primaryContainer.withOpacity(0.3),
                 shape: RoundedRectangleBorder(borderRadius: _kBorderRadius),
               );
@@ -377,15 +333,12 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
     );
   }
 
-  // --- Widget: Area Konten Utama (Loading/Empty/List Jadwal) ---
   Widget _buildContentArea(ThemeData theme, ColorScheme colorScheme) {
-    // Dapatkan status visibilitas keyboard
     final bool isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
 
-    // --- Loading State ---
     if (_isLoading) {
       return const Center(
-        key: ValueKey('loading'), // Key untuk AnimatedSwitcher
+        key: ValueKey('loading'),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -397,20 +350,13 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
       );
     }
 
-    // --- Initial State (Tampilkan HANYA jika tidak ada stasiun terpilih DAN keyboard TIDAK aktif) ---
     if (_selectedStartStation == null && !isKeyboardVisible) {
-      // MODIFIKASI DI SINI
       return const Center(
         key: ValueKey('initial'),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Gunakan ikon yang lebih relevan mungkin? Misal directions_railway atau search_off
-            Icon(
-              Icons.search_off_rounded,
-              size: 60,
-              color: Colors.grey,
-            ), // Contoh ikon lain
+            Icon(Icons.search_off_rounded, size: 60, color: Colors.grey),
             SizedBox(height: _kPadding),
             Text(
               'Silakan cari dan pilih stasiun\nkeberangkatan Anda.',
@@ -422,8 +368,6 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
       );
     }
 
-    // --- Empty State (Sudah memilih stasiun, tapi tidak ada jadwal) ---
-    // Kondisi ini tidak perlu cek keyboard, tetap tampilkan jika jadwal kosong
     if (_selectedStartStation != null && _schedules.isEmpty) {
       return const Center(
         key: ValueKey('empty'),
@@ -442,30 +386,22 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
       );
     }
 
-    // --- List Jadwal ---
-    // Kondisi ini juga tidak perlu cek keyboard
     if (_selectedStartStation != null && _schedules.isNotEmpty) {
       return ListView.separated(
-        key: const ValueKey('schedules'), // Key untuk AnimatedSwitcher
-        padding: const EdgeInsets.only(
-          top: _kSpacing / 2,
-          bottom: _kPadding,
-        ), // Beri padding bawah
+        key: const ValueKey('schedules'),
+        padding: const EdgeInsets.only(top: _kSpacing / 2, bottom: _kPadding),
         itemCount: _schedules.length,
         separatorBuilder: (_, __) => const SizedBox(height: _kSpacing),
         itemBuilder: (context, index) {
           final item = _schedules[index];
 
-          // Ekstraksi data (kode sama seperti sebelumnya)
-          final itemTime = item['time_est'] as String? ?? '-';
-          final dest = item['dest'] as String? ?? 'Tujuan Tidak Diketahui';
-          final routeName =
-              item['route_name'] as String? ?? 'Rute Tidak Diketahui';
-          final colorHex = item['color'] as String? ?? '#808080';
-          final kaName = item['ka_name'] as String? ?? '-';
-          final kaId = item['train_id'] as String? ?? '-';
-          final destTime = item['dest_time'] as String? ?? '-';
-
+          final itemTime = item.timeEst ?? '-';
+          final dest = item.dest ?? 'Tujuan Tidak Diketahui';
+          final routeName = item.routeName ?? 'Rute Tidak Diketahui';
+          final colorHex = item.color ?? '#808080';
+          final kaName = item.kaName ?? '-';
+          final kaId = item.trainId ?? '-';
+          final destTime = item.destTime ?? '-';
           return _buildScheduleCard(
             context: context,
             theme: theme,
@@ -482,17 +418,14 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
       );
     }
 
-    // --- Fallback: Tampilkan widget kosong jika kondisi lain tidak terpenuhi ---
-    // (Ini akan menangani kasus _selectedStartStation == null && isKeyboardVisible)
-    return const SizedBox.shrink(key: ValueKey('placeholder')); // Widget kosong
+    return const SizedBox.shrink(key: ValueKey('placeholder'));
   }
 
-  // --- Widget: Kartu Jadwal Individual (Revisi) ---
   Widget _buildScheduleCard({
     required BuildContext context,
     required ThemeData theme,
     required ColorScheme colorScheme,
-    required Color lineColor, // Warna jalur KRL dari API
+    required Color lineColor,
     required String routeName,
     required String dest,
     required String kaName,
@@ -502,127 +435,121 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
   }) {
     final timeLabel = _getTimeDifferenceLabel(time);
     final bool isUrgent = timeLabel == "Segera";
-    final bool isDeparted =
-        timeLabel == "Berangkat"; // Tambahan untuk status sudah berangkat
+    final bool isDeparted = timeLabel == "Berangkat";
 
-    // Tentukan warna aksen berdasarkan status waktu
     Color timeBadgeColor =
         isUrgent
-            ? Colors
-                .orange
-                .shade100 // Latar belakang oranye untuk Segera
+            ? Colors.orange.shade100
             : isDeparted
-            ? Colors
-                .grey
-                .shade300 // Latar belakang abu-abu untuk Berangkat
-            : colorScheme.secondaryContainer.withOpacity(
-              0.6,
-            ); // Warna tema netral
-
+            ? Colors.grey.shade300
+            : colorScheme.secondaryContainer.withOpacity(0.6);
     Color timeBadgeTextColor =
         isUrgent
-            ? Colors
-                .orange
-                .shade900 // Teks gelap untuk Segera
+            ? Colors.orange.shade900
             : isDeparted
-            ? Colors
-                .grey
-                .shade700 // Teks gelap untuk Berangkat
-            : colorScheme.onSecondaryContainer; // Warna teks tema
+            ? Colors.grey.shade700
+            : colorScheme.onSecondaryContainer;
 
-    // Tentukan warna teks utama untuk jam, bisa berbeda jika sudah berangkat
     Color timeTextColor = isDeparted ? Colors.grey : colorScheme.primary;
-
     return Card(
-      elevation: 4.0, // Beri sedikit shadow lebih terangkat
+      elevation: 4.0,
       shape: RoundedRectangleBorder(
         borderRadius: _kCardBorderRadius,
-        // Tambahkan border samping dengan warna rute (lineColor) yang lebih tebal
-        side: BorderSide(
-          color: lineColor,
-          width: 4,
-        ), // Border samping lebih tegas
+
+        side: BorderSide(color: lineColor, width: 4),
       ),
-      margin:
-          EdgeInsets
-              .zero, // Atur margin di luar widget ini jika perlu jarak antar kartu
-      clipBehavior:
-          Clip.antiAlias, // Memastikan konten tidak melewati border radius
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap:
             isDeparted
                 ? null
-                : () {
-                  // Nonaktifkan onTap jika sudah berangkat
-                  print(
-                    "Tapped schedule: KA $kaName ($kaId) to $dest at $time",
-                  );
-                  // Tambahkan navigasi atau aksi lain di sini
+                : () async {
+                  try {
+                    final schedules = await KRLService().fetchDetailJadwal(
+                      kaId,
+                    );
+
+                    if (schedules.isEmpty) {
+                      // ignore: use_build_context_synchronously
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Tidak ada detail jadwal tersedia.'),
+                        ),
+                      );
+                      return;
+                    }
+
+                    detailScheduleDialog(
+                      context,
+                      lineColor,
+                      routeName,
+                      theme,
+                      isDeparted,
+                      colorScheme,
+                      dest,
+                      time,
+                      timeTextColor,
+                      schedules,
+                    );
+                  } catch (e) {
+                    print("Error fetching detail: $e");
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Gagal memuat detail: $e')),
+                    );
+                  }
                 },
+
         splashColor: lineColor.withOpacity(0.2),
         highlightColor: lineColor.withOpacity(0.1),
         child: Padding(
-          // Beri padding horizontal konsisten, border sudah di card shape
           padding: const EdgeInsets.all(_kPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- Baris Header (Ikon, Rute, Tujuan, Waktu) ---
               Row(
-                crossAxisAlignment:
-                    CrossAxisAlignment.center, // Center vertikal
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Indikator Warna Jalur & Ikon (Lebih Menonjol)
                   Container(
                     padding: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
-                      // Gunakan gradient lembut dari warna rute
                       gradient: LinearGradient(
                         colors: [
-                          lineColor.withOpacity(
-                            0.3,
-                          ), // Warna rute lebih transparan
+                          lineColor.withOpacity(0.3),
                           lineColor.withOpacity(0.1),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(
-                        12.0,
-                      ), // Sedikit lebih bulat dari card
+                      borderRadius: BorderRadius.circular(12.0),
                     ),
                     child: Icon(
-                      Icons.train_sharp, // Ikon kereta
-                      color: lineColor.darken(
-                        0.1,
-                      ), // Sedikit lebih gelap dari warna rute agar kontras
-                      size: 30, // Icon lebih besar
+                      Icons.train_sharp,
+                      color: lineColor.darken(0.1),
+                      size: 30,
                     ),
                   ),
-                  const SizedBox(width: _kSpacing), // Spasi setelah ikon
-                  // Info Rute dan Tujuan
+                  const SizedBox(width: _kSpacing),
+
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          routeName, // Nama Rute lebih besar dan tebal
+                          routeName,
                           style: theme.textTheme.titleMedium?.copyWith(
-                            // Ukuran lebih besar (TitleLarge)
-                            fontWeight: FontWeight.bold, // Bold
+                            fontWeight: FontWeight.bold,
                             color:
                                 isDeparted
                                     ? Colors.grey.shade600
-                                    : colorScheme
-                                        .onSurface, // Warna abu jika berangkat
-                            height: 1.2, // Sedikit spasi antar baris jika wrap
+                                    : colorScheme.onSurface,
+                            height: 1.2,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4), // Spasi kecil
+                        const SizedBox(height: 4),
                         Row(
-                          // Ikon kecil untuk tujuan
                           children: [
                             Icon(
                               Icons.flag_outlined,
@@ -631,17 +558,16 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
                                   isDeparted
                                       ? Colors.grey.shade500
                                       : colorScheme.onSurfaceVariant,
-                            ), // Warna abu jika berangkat
+                            ),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
-                                dest, // Tujuan font lebih kecil
+                                dest,
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color:
                                       isDeparted
                                           ? Colors.grey.shade500
-                                          : colorScheme
-                                              .onSurfaceVariant, // Warna abu jika berangkat
+                                          : colorScheme.onSurfaceVariant,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -652,41 +578,29 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: _kSpacing), // Spasi sebelum jam
-                  // Jam Keberangkatan (Sangat Menonjol)
+                  const SizedBox(width: _kSpacing),
+
                   Text(
                     time,
                     style: theme.textTheme.headlineSmall?.copyWith(
-                      // Ukuran lebih besar (HeadlineMedium)
-                      fontWeight: FontWeight.w900, // Sangat tebal
-                      color: timeTextColor, // Warna jam sesuai status
+                      fontWeight: FontWeight.w900,
+                      color: timeTextColor,
                       decoration:
-                          isDeparted
-                              ? TextDecoration.lineThrough
-                              : null, // Coret jika berangkat
+                          isDeparted ? TextDecoration.lineThrough : null,
                       decorationColor: Colors.grey,
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: _kSpacing * 1.5),
 
-              const SizedBox(
-                height: _kSpacing * 1.5,
-              ), // Spasi sebelum divider lebih besar
-              // --- Divider dengan Warna Rute ---
               Divider(
-                color: lineColor.withOpacity(
-                  0.6,
-                ), // Warna divider dari lineColor, sedikit lebih solid
-                thickness: 1.5, // Divider sedikit lebih tebal
-                height:
-                    0, // Height 0 karena spasi sudah diatur di atas dan bawah
+                color: lineColor.withOpacity(0.6),
+                thickness: 1.5,
+                height: 0,
               ),
+              const SizedBox(height: _kSpacing * 1.5),
 
-              const SizedBox(
-                height: _kSpacing * 1.5,
-              ), // Spasi setelah divider lebih besar
-              // --- Baris Info Detail (Nomor KA) ---
               _buildInfoRow(
                 theme: theme,
                 colorScheme: colorScheme,
@@ -696,52 +610,42 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
                 iconColor:
                     isDeparted
                         ? Colors.grey.shade500
-                        : colorScheme.onSurfaceVariant.withOpacity(
-                          0.8,
-                        ), // Warna abu jika berangkat
+                        : colorScheme.onSurfaceVariant.withOpacity(0.8),
                 labelColor:
                     isDeparted
                         ? Colors.grey.shade500
-                        : colorScheme.onSurfaceVariant.withOpacity(
-                          0.8,
-                        ), // Warna abu jika berangkat
+                        : colorScheme.onSurfaceVariant.withOpacity(0.8),
                 valueColor:
-                    isDeparted
-                        ? Colors.grey.shade600
-                        : colorScheme.onSurface, // Warna abu jika berangkat
+                    isDeparted ? Colors.grey.shade600 : colorScheme.onSurface,
               ),
-              const SizedBox(height: 8), // Spasi antar detail
-              // --- Baris Info Estimasi Waktu (Menggunakan Chip) ---
+              const SizedBox(height: 8),
+
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.schedule, // Ikon jam untuk status waktu
+                    Icons.schedule,
                     size: 18,
                     color:
                         isDeparted
                             ? Colors.grey.shade500
-                            : colorScheme.onSurfaceVariant.withOpacity(
-                              0.8,
-                            ), // Warna abu jika berangkat
+                            : colorScheme.onSurfaceVariant.withOpacity(0.8),
                   ),
                   const SizedBox(width: 8),
                   SizedBox(
-                    width: 70, // Lebar label tetap
+                    width: 70,
                     child: Text(
-                      "Status:", // Ganti label jadi Status?
+                      "Status:",
                       style: theme.textTheme.bodySmall?.copyWith(
                         color:
                             isDeparted
                                 ? Colors.grey.shade500
-                                : colorScheme.onSurfaceVariant.withOpacity(
-                                  0.8,
-                                ), // Warna abu jika berangkat
+                                : colorScheme.onSurfaceVariant.withOpacity(0.8),
                       ),
                     ),
                   ),
                   const SizedBox(width: 4),
-                  // Gunakan Chip untuk visual yang lebih baik
+
                   Chip(
                     avatar:
                         isUrgent
@@ -749,47 +653,50 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
                               Icons.notifications_active_outlined,
                               size: 16,
                               color: timeBadgeTextColor,
-                            ) // Ikon outline agar tidak terlalu padat
+                            )
                             : isDeparted
                             ? Icon(
                               Icons.check_circle_outline,
                               size: 16,
                               color: timeBadgeTextColor,
-                            ) // Ikon outline
-                            : null, // Icon sesuai status
+                            )
+                            : null,
                     label: Text(timeLabel),
                     labelStyle: TextStyle(
-                      color: timeBadgeTextColor, // Warna teks sesuai status
-                      fontWeight: FontWeight.w600, // Semi-bold
+                      color: timeBadgeTextColor,
+                      fontWeight: FontWeight.w600,
                       fontSize: 12,
                     ),
-                    backgroundColor:
-                        timeBadgeColor, // Warna latar sesuai status
+                    backgroundColor: timeBadgeColor,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
                       vertical: 4,
-                    ), // Padding Chip
-                    visualDensity: VisualDensity.compact, // Chip lebih ringkas
-                    side: BorderSide.none, // Hapus border default chip
+                    ),
+                    visualDensity: VisualDensity.compact,
+                    side: BorderSide.none,
                     elevation:
                         isUrgent
                             ? 2.0
                             : isDeparted
                             ? 0.0
-                            : 0.0, // Sedikit shadow jika Segera
-                    // Jika status "Berangkat", bisa tambahkan visual lain seperti opacity pada seluruh kartu
+                            : 0.0,
                   ),
                 ],
               ),
-              // Tambahkan sedikit spasi di bagian bawah jika diperlukan
+
               const SizedBox(height: 8),
               _buildInfoRow(
                 theme: theme,
                 colorScheme: colorScheme,
                 icon: Icons.access_time_outlined,
-
                 label: "Tiba",
                 value: destTime,
+                valueColor:
+                    isDeparted ? Colors.grey.shade600 : colorScheme.onSurface,
+                iconColor:
+                    isDeparted
+                        ? Colors.grey.shade500
+                        : colorScheme.onSurfaceVariant.withOpacity(0.8),
               ),
             ],
           ),
@@ -798,22 +705,196 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
     );
   }
 
-  // --- Widget: Baris Info Detail dalam Kartu (Revisi Minor) ---
-  // Ditambahkan parameter warna untuk fleksibilitas status berangkat
+  Future<dynamic> detailScheduleDialog(
+    BuildContext context,
+    Color lineColor,
+    String routeName,
+    ThemeData theme,
+    bool isDeparted,
+    ColorScheme colorScheme,
+    String dest,
+    String time,
+    Color timeTextColor,
+    List<DataDetailJadwalKrl> schedules,
+  ) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10.0),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      lineColor.withOpacity(0.3),
+                      lineColor.withOpacity(0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                child: Icon(
+                  Icons.train_sharp,
+                  color: lineColor.darken(0.1),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: _kSpacing),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      routeName,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color:
+                            isDeparted
+                                ? Colors.grey.shade600
+                                : colorScheme.onSurface,
+                        height: 1.2,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.flag_outlined,
+                          size: 16,
+                          color:
+                              isDeparted
+                                  ? Colors.grey.shade500
+                                  : colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            dest,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color:
+                                  isDeparted
+                                      ? Colors.grey.shade500
+                                      : colorScheme.onSurfaceVariant,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: _kSpacing),
+
+              Text(
+                time,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w300,
+                  color: timeTextColor,
+                  decoration: isDeparted ? TextDecoration.lineThrough : null,
+                  decorationColor: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          contentPadding: const EdgeInsets.all(_kPadding),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 400),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Divider(
+                    color: lineColor.withOpacity(0.6),
+                    thickness: 1.5,
+                    height: 0,
+                  ),
+                  const SizedBox(height: _kSpacing * 1.5),
+                  Expanded(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: schedules.length,
+                      separatorBuilder: (_, __) => const Divider(),
+                      itemBuilder: (context, index) {
+                        final schedule = schedules[index];
+                        return ListTile(
+                          title: Text(schedule.stationName ?? '-'),
+                          subtitle: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  if (schedule.transitStation == true)
+                                    ...schedule.transit!.map((transit) {
+                                      return Icon(
+                                        Icons.train_sharp,
+                                        size: 20,
+                                        color: _hexToColor(
+                                          transit,
+                                        ),
+                                      );
+                                    }).toList()
+                                  else
+                                    const Icon(
+                                      Icons.train_outlined,
+                                      size: 20,
+                                      color: Colors.transparent,
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(width: 8),
+                              Text(schedule.timeEst ?? '-'),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                FocusScope.of(context).unfocus();
+              },
+              child: const Text('Tutup'),
+            ),
+          ],
+        );
+      },
+      barrierDismissible: true,
+    );
+  }
+
   Widget _buildInfoRow({
     required ThemeData theme,
     required ColorScheme colorScheme,
     required IconData icon,
     required String label,
     required String value,
-    Color? iconColor, // Warna ikon bisa di-override
-    Color? labelColor, // Warna label bisa di-override
-    Color? valueColor, // Warna value bisa di-override
+    Color? iconColor,
+    Color? labelColor,
+    Color? valueColor,
     FontWeight? valueWeight,
   }) {
     return Row(
-      crossAxisAlignment:
-          CrossAxisAlignment.start, // Align start untuk teks panjang
+      crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Row(
@@ -821,49 +902,37 @@ class _KRLSchedulePageState extends State<KRLSchedulePage> {
           children: [
             Icon(
               icon,
-              size: 18, // Ukuran ikon detail
-              color:
-                  iconColor ??
-                  colorScheme.onSurfaceVariant.withOpacity(
-                    0.8,
-                  ), // Gunakan warna dari parameter atau default
+              size: 18,
+              color: iconColor ?? colorScheme.onSurfaceVariant.withOpacity(0.8),
             ),
             const SizedBox(width: 8),
             SizedBox(
-              width: 70, // Lebar tetap untuk label agar rata kiri
+              width: 70,
               child: Text(
                 "$label:",
                 style: theme.textTheme.bodySmall?.copyWith(
                   color:
                       labelColor ??
-                      colorScheme.onSurfaceVariant.withOpacity(
-                        0.8,
-                      ), // Gunakan warna dari parameter atau default
+                      colorScheme.onSurfaceVariant.withOpacity(0.8),
                 ),
               ),
             ),
           ],
         ),
-
         const SizedBox(width: 4),
         Expanded(
           child: Text(
             value,
             style: theme.textTheme.bodyMedium?.copyWith(
               fontWeight: valueWeight ?? FontWeight.w500,
-              color:
-                  valueColor ??
-                  colorScheme
-                      .onSurface, // Gunakan warna dari parameter atau default
-              height: 1.3, // Sedikit ruang jika teks value panjang dan wrap
+              color: valueColor ?? colorScheme.onSurface,
+              height: 1.3,
             ),
           ),
         ),
       ],
     );
   }
-
-  // Extension helper untuk menggelapkan warna, tambahkan ini di luar class widget
 }
 
 extension ColorBrightness on Color {
