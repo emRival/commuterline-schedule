@@ -68,7 +68,6 @@ class KRLSchedulePageState extends State<KRLSchedulePage> {
         });
       }
     } catch (e) {
-      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal memuat data stasiun: $e')),
@@ -137,7 +136,6 @@ class KRLSchedulePageState extends State<KRLSchedulePage> {
         return "$hours jam $minutes menit lagi";
       }
     } catch (e) {
-   
       return "-";
     }
   }
@@ -839,11 +837,25 @@ class KRLSchedulePageState extends State<KRLSchedulePage> {
                                 children: [
                                   if (schedule.transitStation == true)
                                     ...schedule.transit!.map((transit) {
-                                      return Icon(
-                                        Icons.train_sharp,
-                                        size: 20,
-                                        color: _hexToColor(
-                                          transit,
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                          right: 4,
+                                        ),
+                                        child: Chip(
+                                          label: Icon(
+                                            Icons.train_sharp,
+                                            size: 20,
+                                            color: _hexToColor(transit),
+                                          ),
+                                          backgroundColor: _hexToColor(
+                                            transit,
+                                          ).withOpacity(0.1),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 5,
+                                            vertical: 4,
+                                          ),
+                                          visualDensity: VisualDensity.compact,
+                                          side: BorderSide.none,
                                         ),
                                       );
                                     }).toList()
