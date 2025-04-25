@@ -149,11 +149,17 @@ class KRLSchedulePageState extends State<KRLSchedulePage> {
         titleSpacing: 0,
         title: Padding(
           padding: const EdgeInsets.only(left: 0.0),
-          child: Text(
-            "Jadwal KRL Commuter Line",
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onPrimary,
+          child: ListTile(
+            title: Text(
+              "KRLin Aja!",
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onPrimary,
+              ),
+            ),
+            subtitle: Text(
+              "Jalan Santuy, Jadwal KRL di Tanganmu!",
+              style: TextStyle(color: colorScheme.onPrimary, fontSize: 12),
             ),
           ),
         ),

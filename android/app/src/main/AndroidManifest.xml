@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="krl_schedule_with_gemini_ai"
+        android:label="KRLin Aja!"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
