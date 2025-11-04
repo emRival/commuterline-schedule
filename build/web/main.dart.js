@@ -93510,7 +93510,7 @@ alU(a){var s=0,r=A.X(t.xr),q,p=2,o=[],n,m,l,k,j,i,h,g
 var $async$A4=A.T(function(b,c){if(b===1){o.push(c)
 s=p}while(true)switch(s){case 0:if(a.length===0){q=A.a([],t.hY)
 s=1
-break}n=A.hT("https://api-partner.krl.co.id/krl-webs/v1/schedule-train?trainid="+a)
+break}n=A.hT("https://api-partner.krl.co.id/krl-webs/v1/schedules-train?trainid="+a)
 p=4
 i=t.N
 s=7

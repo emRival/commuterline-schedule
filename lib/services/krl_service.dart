@@ -50,7 +50,7 @@ class KRLService {
     if (trainId.isEmpty) return [];
 
     final url = Uri.parse(
-      'https://api-partner.krl.co.id/krl-webs/v1/schedule-train?trainid=$trainId',
+      'https://api-partner.krl.co.id/krl-webs/v1/schedules-train?trainid=$trainId',
     );
 
     try {
