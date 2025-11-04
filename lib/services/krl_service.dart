@@ -13,7 +13,7 @@ class KRLService {
     if (stationCode.isEmpty) return [];
 
     final url = Uri.parse(
-      'https://api-partner.krl.co.id/krl-webs/v1/schedule?stationid=$stationCode&timefrom=00:00&timeto=23:59',
+      'https://api-partner.krl.co.id/krl-webs/v1/schedules?stationid=$stationCode&timefrom=00:00&timeto=23:59',
     );
 
     try {

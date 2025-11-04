@@ -93471,7 +93471,7 @@ alV(a){var s=0,r=A.X(t.yT),q,p=2,o=[],n,m,l,k,j,i,h,g,f,e,d,c
 var $async$A5=A.T(function(b,a0){if(b===1){o.push(a0)
 s=p}while(true)switch(s){case 0:if(a.length===0){q=A.a([],t.et)
 s=1
-break}n=A.hT("https://api-partner.krl.co.id/krl-webs/v1/schedule?stationid="+a+"&timefrom=00:00&timeto=23:59")
+break}n=A.hT("https://api-partner.krl.co.id/krl-webs/v1/schedules?stationid="+a+"&timefrom=00:00&timeto=23:59")
 p=4
 f=t.N
 s=7
